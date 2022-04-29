@@ -1,7 +1,8 @@
 import * as puppeteer from 'puppeteer';
+import { Uploader } from './uploader';
 
 export class Scraper {
-  constructor() {}
+  constructor(private uploader: Uploader) {}
 
   public scrap() {
     (async () => {
@@ -18,6 +19,11 @@ export class Scraper {
       const bodyHandle = await page.$('body');
       const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
       console.log(html);
+
+      this.uploader
+        .uploadFile(url, html)
+        .then(() => console.log('Upload Done', url))
+        .catch((ex) => console.log(ex.message, url));
 
       browser.close();
     })();

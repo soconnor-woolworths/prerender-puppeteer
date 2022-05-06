@@ -1,4 +1,5 @@
 import { BlobServiceClient } from '@azure/storage-blob';
+import { hashUrl } from './utils';
 require('dotenv').config();
 
 export class Uploader {
@@ -39,8 +40,6 @@ export class Uploader {
   }
 
   private getBlobName(pageUrl: string): string {
-    // TODO: Work out blob name
-    // Hash the url name
-    return 'test.html';
+    return hashUrl(pageUrl);
   }
 }

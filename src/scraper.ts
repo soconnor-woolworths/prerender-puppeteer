@@ -1,6 +1,8 @@
 import * as puppeteer from 'puppeteer';
 import { Uploader } from './uploader';
 import { SitemapURLExtract } from './sitemap';
+import { dbConnection } from './dbconnect';
+import { removeParams } from './queryConfig';
 
 export class Scraper {
   constructor(private uploader: Uploader) {}
@@ -10,28 +12,35 @@ export class Scraper {
       const siteMap = new SitemapURLExtract();
       const urls: any = await siteMap.urlExtract();
       console.log('URLS fetched from sitemaps!!!');
-      console.log(urls[0].loc[0]);
+      //const scraperUrl = urls[0].loc[0];
+      console.log(
+        'URL before deleting the params: https://www.woolworths.com.au/shop/discover/about-us/offers-and-competitions?name=seafoodcomp-offer&cardId=5744'
+      );
+      const scraperUrl = removeParams(
+        'https://www.woolworths.com.au/shop/discover/about-us/offers-and-competitions?name=seafoodcomp-offer&cardId=5744'
+      );
+      console.log(scraperUrl);
+
       /* fs.writeFileSync('sitedata.json', JSON.stringify(urls, null, 2), {
         encoding: 'utf8',
       }); */
       const browser = await puppeteer.launch({ headless: false });
       const page = await browser.newPage();
-
-      //const url = 'https://www.woolworths.com.au/';
-
-      console.log('Navigating to ', urls[0].loc[0]);
-
-      //{waitUntil: 'load'} // Which is better to use?
-      await page.goto(urls[0].loc[0], { waitUntil: 'networkidle0' });
-
+      console.log('Navigating to ', scraperUrl);
+      await page.goto(scraperUrl, { waitUntil: 'networkidle0' });
+      console.log('Fetching html....');
       const bodyHandle = await page.$('body');
       const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
-      console.log(html);
+      console.log('Uploading html to Azure blob storage...');
+      var hashedFilename: any = '';
+      try {
+        hashedFilename = await this.uploader.uploadFile(scraperUrl, html);
+      } catch (error) {
+        console.log('Failed to Upload the file in Azure blob', error);
+      }
+      //Connection to DB and update the record in the table
 
-      this.uploader
-        .uploadFile(urls[0].loc[0], html)
-        .then(() => console.log('Upload Done', urls[0].loc[0]))
-        .catch((ex) => console.log(ex.message, urls[0].loc[0]));
+      dbConnection(hashedFilename);
 
       browser.close();
     })();

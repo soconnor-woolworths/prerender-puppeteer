@@ -11,32 +11,35 @@ export class Uploader {
   constructor() {}
 
   public async uploadFile(pageUrl: string, fileData: string) {
-    this.uploadToBlobStorage(pageUrl, fileData);
+    return await this.uploadToBlobStorage(pageUrl, fileData);
   }
 
-  private async uploadToBlobStorage(pageUrl: string, fileData: string) {
-    if (!this.AZURE_STORAGE_CONNECTION_STRING) {
-      throw Error('Azure Storage Connection string not found');
-    }
-    const blobServiceClient = BlobServiceClient.fromConnectionString(
-      this.AZURE_STORAGE_CONNECTION_STRING
-    );
+  private uploadToBlobStorage(pageUrl: string, fileData: string) {
+    return new Promise(async (resolve, reject) => {
+      if (!this.AZURE_STORAGE_CONNECTION_STRING) {
+        throw Error('Azure Storage Connection string not found');
+      }
+      const blobServiceClient = BlobServiceClient.fromConnectionString(
+        this.AZURE_STORAGE_CONNECTION_STRING
+      );
 
-    const containerClient = blobServiceClient.getContainerClient(
-      this.containerName
-    );
-    const blobName = this.getBlobName(pageUrl);
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+      const containerClient = blobServiceClient.getContainerClient(
+        this.containerName
+      );
+      const blobName = this.getBlobName(pageUrl);
+      const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-    console.log('\nUploading to Azure storage as blob:\n\t', blobName);
-    const uploadBlobResponse = await blockBlobClient.upload(
-      fileData,
-      fileData.length
-    );
-    console.log(
-      'Blob was uploaded successfully. requestId: ',
-      uploadBlobResponse.requestId
-    );
+      console.log('\nUploading to Azure storage as blob:\n\t', blobName);
+      const uploadBlobResponse = await blockBlobClient.upload(
+        fileData,
+        fileData.length
+      );
+      console.log(
+        'Blob was uploaded successfully. requestId: ',
+        uploadBlobResponse.requestId
+      );
+      resolve(blobName);
+    });
   }
 
   private getBlobName(pageUrl: string): string {

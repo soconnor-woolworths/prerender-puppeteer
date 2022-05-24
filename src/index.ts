@@ -1,13 +1,18 @@
+import * as dotenv from 'dotenv';
 import { Mongoose } from 'mongoose';
 import { connectMongoDb } from './connect-db';
 import { Scraper } from './scraper';
 import { Uploader } from './uploader';
 
+dotenv.config({
+  path: `.env.${process.env.NODE_ENV}`,
+});
+
 let mongoose: Mongoose;
 connectMongoDb()
   .then(() => {
-const scraper = new Scraper(new Uploader());
-scraper.scrap();
+    const scraper = new Scraper(new Uploader());
+    scraper.scrap();
   })
   .catch((err) => {
     console.error({ err });

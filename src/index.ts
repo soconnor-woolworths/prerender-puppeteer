@@ -1,8 +1,27 @@
+import * as dotenv from 'dotenv';
+import { Mongoose } from 'mongoose';
+import { connectMongoDb } from './connect-db';
 import { Scraper } from './scraper';
 import { Uploader } from './uploader';
 
-const scraper = new Scraper(new Uploader());
-scraper.scrap();
+dotenv.config({
+  path: `.env.${process.env.NODE_ENV}`,
+});
+
+let mongoose: Mongoose;
+connectMongoDb()
+  .then(() => {
+    const scraper = new Scraper(new Uploader());
+    scraper.scrap();
+  })
+  .catch((err) => {
+    console.error({ err });
+  })
+  .finally(() => {
+    if (mongoose) {
+      mongoose.disconnect();
+    }
+  });
 
 // TODO: Get list of urls we want to exclude query params from
 // TODO: Scrape mobile, tablet and desktop versions

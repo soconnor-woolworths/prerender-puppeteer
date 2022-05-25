@@ -1,4 +1,4 @@
-import { Schema, model, connect } from "mongoose";
+import { Schema, model } from 'mongoose';
 
 interface ILookUpUrl {
   _id: string;
@@ -15,4 +15,4 @@ const lookUpUrlSchema = new Schema<ILookUpUrl>(
   { timestamps: true }
 );
 
-export const LookUpUrl = model<ILookUpUrl>("LookupUrl", lookUpUrlSchema);
+export const LookUpUrl = model<ILookUpUrl>('LookupUrl', lookUpUrlSchema);

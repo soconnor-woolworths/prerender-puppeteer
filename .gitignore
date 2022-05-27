@@ -42,3 +42,9 @@ TESTS-*.xml
 .DS_Store
 Thumbs.db
 /debug.log
+
+.env*
+
+# prevent lock files to be added
+package-lock.json
+yarn.lock

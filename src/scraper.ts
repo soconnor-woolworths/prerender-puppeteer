@@ -1,7 +1,7 @@
 import * as puppeteer from 'puppeteer';
 import { Uploader } from './uploader';
 import { SitemapURLExtract } from './sitemap';
-import { dbConnection } from './dbconnect';
+import { saveOrUpdateLookUpUrl } from './updateLookUpTable';
 import { removeParams } from './queryConfig';
 
 export class Scraper {
@@ -40,7 +40,7 @@ export class Scraper {
       }
       //Connection to DB and update the record in the table
 
-      dbConnection(hashedFilename);
+      await saveOrUpdateLookUpUrl(hashedFilename);
 
       browser.close();
     })();

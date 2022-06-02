@@ -3,7 +3,7 @@ import { Uploader } from './uploader';
 import { SitemapURLExtract } from './sitemap';
 import { saveOrUpdateLookUpUrl } from './updateLookUpTable';
 import { removeParams } from './queryConfig';
-
+import { removeScripts } from './jsScrapper';
 export class Scraper {
   constructor(private uploader: Uploader) {}
 
@@ -13,12 +13,11 @@ export class Scraper {
       const urls: any = await siteMap.urlExtract();
       console.log('URLS fetched from sitemaps!!!');
       //const scraperUrl = urls[0].loc[0];
-      console.log(
+      //const scraperUrl = 'https://www.woolworths.com.au/shop/browse/specials/online-only-specials';
+      /*  console.log(
         'URL before deleting the params: https://www.woolworths.com.au/shop/discover/about-us/offers-and-competitions?name=seafoodcomp-offer&cardId=5744'
-      );
-      const scraperUrl = removeParams(
-        'https://www.woolworths.com.au/shop/discover/about-us/offers-and-competitions?name=seafoodcomp-offer&cardId=5744'
-      );
+      ); */
+      const scraperUrl = removeParams(urls[0].loc[0]);
       console.log(scraperUrl);
 
       /* fs.writeFileSync('sitedata.json', JSON.stringify(urls, null, 2), {
@@ -27,10 +26,13 @@ export class Scraper {
       const browser = await puppeteer.launch({ headless: false });
       const page = await browser.newPage();
       console.log('Navigating to ', scraperUrl);
-      await page.goto(scraperUrl, { waitUntil: 'networkidle0' });
+      await page.goto(scraperUrl, { waitUntil: 'networkidle2' });
       console.log('Fetching html....');
-      const bodyHandle = await page.$('body');
-      const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
+      const bodyHandle = await page.$('html');
+      const html = removeScripts(
+        await page.evaluate((html) => html.innerHTML, bodyHandle)
+      );
+
       console.log('Uploading html to Azure blob storage...');
       var hashedFilename: any = '';
       try {
